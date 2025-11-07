@@ -6,6 +6,8 @@ import "rick-morty-card/dist/styles.css";
 import "./App.css";
 import { useState } from "react";
 import { useDeviceType } from "./hooks/useIsMobile";
+import { useFavorite } from "./hooks/useFavorite";
+import { tabs } from "./helpers/tabs";
 
 interface AppProps {
   characters?: any[];
@@ -17,25 +19,7 @@ function App({ characters, favorites, setFavorites }: AppProps) {
   const [selectedTab, setSelectedTab] = useState("all");
   const deviceType = useDeviceType();
 
-  const tabs = [
-    { label: "All", value: "all" },
-    { label: "Favorites", value: "favorites" },
-  ];
-
-  const onFavoriteChange = (id: number | string, isFavorite: boolean) => {
-    if (!characters || !setFavorites) return;
-
-    if (isFavorite) {
-      const selectedChar = characters.find((char) => char.id === id);
-      if (selectedChar) {
-        const updated = [...(favorites || []), selectedChar];
-        setFavorites(updated);
-      }
-    } else {
-      const updated = (favorites || []).filter((f) => f.id !== id);
-      setFavorites(updated);
-    }
-  };
+  const { onFavoriteChange } = useFavorite({characters: characters || [], favorites: favorites || [], setFavorites: setFavorites!});
 
   const visibleList = selectedTab === "all" ? characters : favorites;
 
@@ -46,11 +30,13 @@ function App({ characters, favorites, setFavorites }: AppProps) {
         sx={{
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: deviceType === "mobile" ? "center" : "start",
           justifyContent: "start",
           position: "relative",
           maxWidth: "1024px",
           width: "100%",
+          backgroundColor: 'red',
+          mx: '4px'
         }}
       >
         <TabsComponent
@@ -64,7 +50,7 @@ function App({ characters, favorites, setFavorites }: AppProps) {
             fontWeight: 600,
             fontSize: "18px",
             lineHeight: "32px",
-            color: theme.palette.text.secondary[600],
+            color: theme.palette.secondary[600] ?? "#000",
             top: "100px",
             display: "flex",
             columnGap: "8px",
@@ -126,7 +112,7 @@ function App({ characters, favorites, setFavorites }: AppProps) {
                 fontWeight: 700,
                 fontSize: "36px",
                 lineHeight: "100%",
-                color: theme.palette.text.secondary[800],
+                color: theme.palette.secondary[800],
               }}>Oh no!</Typography>
               <Typography sx={{
                 fontFamily: "Montserrat",
@@ -136,7 +122,7 @@ function App({ characters, favorites, setFavorites }: AppProps) {
                 letterSpacing: "2%",
                 top: "16px",
                 position: "relative",
-                color: theme.palette.text.secondary[600],
+                color: theme.palette.secondary[600] ?? "#000",
               }}>There are no characters in {selectedTab === "all" ? "All" : "Favorites"}!</Typography>
             </Box>
           )}

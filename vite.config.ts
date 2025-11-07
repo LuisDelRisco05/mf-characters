@@ -1,7 +1,8 @@
-import federation from '@originjs/vite-plugin-federation'
+import { defineConfig } from "vitest/config";
 import react from '@vitejs/plugin-react-swc'
+import federation from '@originjs/vite-plugin-federation'
 import path from 'path'
-import { defineConfig } from 'vite'
+import dts from "vite-plugin-dts";
 
 import packageJson from './package.json'
 
@@ -16,7 +17,8 @@ export default defineConfig(() => {
           './mf-characters': './src/App.tsx'
         },
         shared: packageJson.dependencies
-      })
+      }),
+      dts({ include: ["src"] })
     ],
     resolve: {
       alias: {
@@ -29,7 +31,34 @@ export default defineConfig(() => {
       modulePreload: false,
       target: 'esnext',
       minify: false,
-      cssCodeSplit: false
-    }
+      cssCodeSplit: false,
+      rollupOptions: {
+        external: [
+          "react",
+          "react-dom",
+          "@mui/material",
+          "@emotion/react",
+          "@emotion/styled",
+        ],
+        output: {
+          globals: {
+            react: "React",
+            "react-dom": "ReactDOM",
+          },
+        },
+      },
+    },
+    test: {
+      globals: true,
+      environment: "jsdom",
+      setupFiles: "./src/setupTests.ts",
+      pool: "forks",
+      include: ["src/**/*.test.{ts,tsx}"],
+      isolate: false,
+      deps: {
+        interopDefault: true, // permite importar CJS como default
+        inline: [/rick-morty-card/], // fuerza a Vitest a transformar ese paquete
+      },
+    },
   }
 })
